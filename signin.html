@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a1a;
+    --ink-muted: #6b6b6b;
+    --ink-faint: #aaaaaa;
+    --surface: #f7f5f0;
+    --paper: #ffffff;
+    --accent: #2d5a3d;
+    --accent-light: #e8f0eb;
+    --border: #e0ddd6;
+    --success: #2d5a3d;
+  }
+
+  html, body {
+    min-height: 100%;
+    background: var(--surface);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin: 0 auto 1.25rem;
+  }
+
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+    min-height: 2.4rem;
+  }
+
+  .date-display {
+    font-size: 0.875rem;
+    color: var(--ink-muted);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+  }
+
+  .field {
+    margin-bottom: 1.25rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(45,90,61,0.12);
+    background: var(--paper);
+  }
+
+  input[type="text"]::placeholder { color: var(--ink-faint); }
+
+  .submit-btn {
+    width: 100%;
+    padding: 0.9rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 0.25rem;
+  }
+
+  .submit-btn:hover { background: #24472f; }
+  .submit-btn:active { transform: scale(0.99); }
+
+  .error-msg {
+    font-size: 0.8rem;
+    color: #c0392b;
+    margin-top: 0.4rem;
+    display: none;
+  }
+
+  /* Success state */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 2.5rem 2rem;
+  }
+
+  .checkmark {
+    width: 56px; height: 56px;
+    background: var(--accent-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    font-size: 1.5rem;
+  }
+
+  .success-screen h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .success-screen .sub {
+    font-size: 0.875rem;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  .sign-again {
+    margin-top: 1.5rem;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 1.25rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .sign-again:hover { border-color: var(--ink-muted); color: var(--ink); }
+
+  .footer-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--ink-faint);
+    margin-top: 1.5rem;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .wrap { animation: fadeUp 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <div class="dot"></div>
+    <div class="event-name" id="event-name">Sign In</div>
+    <div class="date-display" id="date-display"></div>
+  </div>
+
+  <div class="card" id="signin-card">
+    <div class="field">
+      <label for="name">Your full name</label>
+      <input type="text" id="name" placeholder="First and last name" autocomplete="name" autofocus>
+      <div class="error-msg" id="error-msg">Please enter your name to continue.</div>
+    </div>
+    <button class="submit-btn" onclick="doSignin()">Sign In</button>
+  </div>
+
+  <div class="card success-screen" id="success-screen">
+    <div class="checkmark">✓</div>
+    <h2 id="success-name"></h2>
+    <p class="sub" id="success-time"></p>
+    <button class="sign-again" onclick="resetForm()">Sign in as someone else</button>
+  </div>
+
+  <p class="footer-note">Your information is recorded securely.</p>
+</div>
+
+<script>
+  const STORAGE_KEY = 'signin_log_v1';
+
+  function getParam(k) {
+    return new URLSearchParams(window.location.search).get(k) || '';
+  }
+
+  function getDate() {
+    const override = getParam('date');
+    if (override) {
+      const d = new Date(override + 'T12:00:00');
+      return { display: d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}), short: override };
+    }
+    const n = new Date();
+    const short = n.toISOString().slice(0,10);
+    return { display: n.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}), short };
+  }
+
+  function init() {
+    const name = getParam('event') || 'Sign In';
+    document.getElementById('event-name').textContent = name;
+    document.title = name + ' — Sign In';
+    const dt = getDate();
+    document.getElementById('date-display').textContent = dt.display;
+  }
+
+  function doSignin() {
+    const nameVal = document.getElementById('name').value.trim();
+    const errEl = document.getElementById('error-msg');
+    if (!nameVal) { errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const dt = getDate();
+    const entry = {
+      name: nameVal,
+      time: timeStr,
+      date: dt.short,
+      event: getParam('event') || '',
+      ts: now.toISOString()
+    };
+
+    const log = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    log.push(entry);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
+
+    document.getElementById('signin-card').style.display = 'none';
+    const ss = document.getElementById('success-screen');
+    ss.style.display = 'block';
+    document.getElementById('success-name').textContent = 'Welcome, ' + nameVal + '!';
+    document.getElementById('success-time').textContent = 'Signed in at ' + timeStr + '\n' + dt.display;
+  }
+
+  function resetForm() {
+    document.getElementById('name').value = '';
+    document.getElementById('signin-card').style.display = 'block';
+    document.getElementById('success-screen').style.display = 'none';
+    document.getElementById('name').focus();
+  }
+
+  document.getElementById('name').addEventListener('keydown', e => { if (e.key === 'Enter') doSignin(); });
+  init();
+</script>
+</body>
+</html>

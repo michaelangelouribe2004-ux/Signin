@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Log — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a1a;
+    --ink-muted: #6b6b6b;
+    --ink-faint: #aaaaaa;
+    --surface: #f7f5f0;
+    --paper: #ffffff;
+    --accent: #2d5a3d;
+    --accent-light: #e8f0eb;
+    --border: #e0ddd6;
+    --danger: #c0392b;
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--surface);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    padding: 0;
+  }
+
+  /* Top bar */
+  .topbar {
+    background: var(--paper);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .topbar h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+  }
+
+  .topbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--ink);
+    transition: background 0.12s, border-color 0.12s;
+    letter-spacing: 0.01em;
+  }
+  .btn:hover { background: var(--surface); }
+  .btn-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-accent:hover { background: #24472f; }
+  .btn-danger { color: var(--danger); border-color: #e8c5c2; }
+  .btn-danger:hover { background: #fdf2f1; }
+
+  /* Controls area */
+  .controls {
+    padding: 1.5rem 2rem 1rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: var(--paper);
+  }
+
+  .ctrl-group { display: flex; flex-direction: column; gap: 4px; }
+  .ctrl-group label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-muted);
+  }
+  .ctrl-group input, .ctrl-group select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    color: var(--ink);
+    background: var(--surface);
+    outline: none;
+    min-width: 160px;
+  }
+  .ctrl-group input:focus, .ctrl-group select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(45,90,61,0.1);
+  }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem 2rem;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: var(--ink);
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+
+  /* Table */
+  .table-wrap {
+    padding: 0 2rem 2rem;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  thead {
+    background: var(--surface);
+  }
+
+  th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface); }
+
+  .name-cell { font-weight: 500; }
+  .time-cell { font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+  .date-badge {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.75rem;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .event-tag {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-faint);
+    font-size: 1rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.1s, background 0.1s;
+  }
+  .del-btn:hover { color: var(--danger); background: #fdf2f1; }
+
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .empty-state p { color: var(--ink-muted); font-size: 0.9rem; }
+
+  /* Link builder */
+  .link-builder {
+    margin: 0 2rem 2rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .link-builder h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+
+  .link-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .link-row input[type="text"],
+  .link-row input[type="date"] {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    color: var(--ink);
+    background: var(--surface);
+    outline: none;
+    flex: 1;
+    min-width: 140px;
+  }
+  .link-row input:focus { border-color: var(--accent); }
+
+  .generated-link {
+    margin-top: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.875rem;
+    font-size: 0.8rem;
+    color: var(--accent);
+    word-break: break-all;
+    font-family: monospace;
+    display: none;
+  }
+
+  @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+  .table-wrap, .stats, .link-builder { animation: fadeIn 0.3s ease both; }
+
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--ink);
+    color: #fff;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: transform 0.25s ease;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 600px) {
+    .topbar, .controls, .stats, .table-wrap, .link-builder { padding-left: 1rem; padding-right: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-dot"></div>
+    <h1>Attendance Log</h1>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-accent" onclick="exportCSV()">Export CSV</button>
+    <button class="btn btn-danger" onclick="clearAll()">Clear all</button>
+  </div>
+</div>
+
+<!-- Link builder -->
+<div class="link-builder">
+  <h3>Build your sign-in link</h3>
+  <div class="link-row">
+    <input type="text" id="lb-event" placeholder="Event name (optional)" oninput="buildLink()">
+    <input type="date" id="lb-date" oninput="buildLink()">
+    <button class="btn btn-accent" onclick="copyLink()">Copy link</button>
+  </div>
+  <div class="generated-link" id="generated-link"></div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="ctrl-group">
+    <label>Filter by date</label>
+    <input type="date" id="filter-date" onchange="render()">
+  </div>
+  <div class="ctrl-group">
+    <label>Filter by event</label>
+    <select id="filter-event" onchange="render()">
+      <option value="">All events</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <label>Search name</label>
+    <input type="text" id="filter-name" placeholder="Type to search..." oninput="render()">
+  </div>
+  <button class="btn" onclick="clearFilters()" style="align-self:flex-end;">Clear filters</button>
+  <button class="btn" onclick="loadLog()" style="align-self:flex-end;">↻ Refresh</button>
+</div>
+
+<!-- Stats -->
+<div class="stats" id="stats-bar"></div>
+
+<!-- Table -->
+<div class="table-wrap" id="table-wrap"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'signin_log_v1';
+  let log = [];
+
+  function loadLog() {
+    log = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    populateEventFilter();
+    render();
+  }
+
+  function populateEventFilter() {
+    const sel = document.getElementById('filter-event');
+    const current = sel.value;
+    const events = [...new Set(log.map(e => e.event).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">All events</option>' + events.map(e => `<option value="${e}">${e}</option>`).join('');
+    sel.value = current;
+  }
+
+  function getFiltered() {
+    const fd = document.getElementById('filter-date').value;
+    const fe = document.getElementById('filter-event').value;
+    const fn = document.getElementById('filter-name').value.trim().toLowerCase();
+    return log.filter(e => {
+      if (fd && e.date !== fd) return false;
+      if (fe && e.event !== fe) return false;
+      if (fn && !e.name.toLowerCase().includes(fn)) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    const data = getFiltered().slice().reverse();
+
+    // Stats
+    const statsEl = document.getElementById('stats-bar');
+    const uniqueDates = [...new Set(data.map(e => e.date))];
+    statsEl.innerHTML = `
+      <div class="stat"><span class="stat-num">${data.length}</span><span class="stat-label">Sign-ins shown</span></div>
+      <div class="stat"><span class="stat-num">${log.length}</span><span class="stat-label">Total all time</span></div>
+      <div class="stat"><span class="stat-num">${uniqueDates.length}</span><span class="stat-label">Days</span></div>
+    `;
+
+    const wrap = document.getElementById('table-wrap');
+
+    if (!data.length) {
+      wrap.innerHTML = `<div class="empty-state"><p>${log.length ? 'No entries match your filters.' : 'No sign-ins recorded yet. Share the sign-in link to get started.'}</p></div>`;
+      return;
+    }
+
+    wrap.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Time</th>
+            <th>Date</th>
+            <th>Event</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map((e, i) => `
+            <tr>
+              <td style="color:var(--ink-faint);font-size:0.75rem;">${data.length - i}</td>
+              <td class="name-cell">${esc(e.name)}</td>
+              <td class="time-cell">${esc(e.time)}</td>
+              <td><span class="date-badge">${esc(e.date)}</span></td>
+              <td><span class="event-tag">${esc(e.event || '—')}</span></td>
+              <td><button class="del-btn" onclick="deleteEntry('${esc(e.ts)}')" title="Delete">✕</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function deleteEntry(ts) {
+    log = log.filter(e => e.ts !== ts);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
+    render();
+    showToast('Entry removed');
+  }
+
+  function clearAll() {
+    if (!confirm('Delete all sign-in entries? This cannot be undone.')) return;
+    log = [];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
+    render();
+    showToast('Log cleared');
+  }
+
+  function clearFilters() {
+    document.getElementById('filter-date').value = '';
+    document.getElementById('filter-event').value = '';
+    document.getElementById('filter-name').value = '';
+    render();
+  }
+
+  function exportCSV() {
+    const data = getFiltered().slice().reverse();
+    if (!data.length) { showToast('Nothing to export'); return; }
+    const rows = [['#','Name','Time','Date','Event','ISO Timestamp'],...data.map((e,i)=>[i+1,e.name,e.time,e.date,e.event||'',e.ts])];
+    const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'attendance-' + (document.getElementById('filter-date').value || new Date().toISOString().slice(0,10)) + '.csv';
+    a.click();
+    showToast('CSV downloaded');
+  }
+
+  function buildLink() {
+    const event = document.getElementById('lb-event').value.trim();
+    const date  = document.getElementById('lb-date').value;
+    const base  = window.location.href.replace('admin.html','signin.html').split('?')[0];
+    const params = new URLSearchParams();
+    if (event) params.set('event', event);
+    if (date)  params.set('date', date);
+    const link = base + (params.toString() ? '?' + params.toString() : '');
+    const el = document.getElementById('generated-link');
+    el.textContent = link;
+    el.style.display = 'block';
+  }
+
+  function copyLink() {
+    const link = document.getElementById('generated-link').textContent;
+    if (!link) { buildLink(); }
+    const text = document.getElementById('generated-link').textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('Link copied!')).catch(() => {
+      prompt('Copy this link:', text);
+    });
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // Auto-refresh every 10 seconds
+  setInterval(loadLog, 10000);
+  loadLog();
+</script>
+</body>
+</html>
